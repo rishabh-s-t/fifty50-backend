@@ -72,4 +72,18 @@ const addUserToGroupController = async (req, res) => {
   res.status(200).send('User added successfully');
 };
 
+const getGroupController = async (req, res) => {
+  const groupId = req.params.groupId;
+  const group = Group.findOne({ inviteID: groupId });
+
+  if (!group) {
+    res.status(404).send('No group with the following Id');
+    return;
+  }
+
+  res.status(200).send({
+    //todo
+  });
+};
+
 module.exports = { createGroupController, addUserToGroupController };
