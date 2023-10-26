@@ -48,7 +48,7 @@ const createGroupController = async (req, res) => {
 const addUserToGroupController = async (req, res) => {
   const groupId = req.params.groupId;
   const memberId = req.params.memberId;
-  const group = await Group.findById(groupId);
+  const group = await Group.findOne({ inviteID: groupId });
 
   if (!group) {
     res.status(404).send('Group not found');
@@ -61,8 +61,12 @@ const addUserToGroupController = async (req, res) => {
     return;
   }
 
-  group.usersInvolved.push(member._id);
+  if (group.usersInvolved.includes(member._id)) {
+    res.status(400).send('User already exists in the group');
+    return;
+  }
 
+  group.usersInvolved.push(memberId);
   await group.save();
 
   res.status(200).send('User added successfully');
