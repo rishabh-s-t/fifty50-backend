@@ -8,14 +8,17 @@ const GroupSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add group name'],
     trim: true,
+    minlength: 1,
+    maxlength: 50,
   },
   groupDescription: {
     type: String,
-    required: false,
+    maxlength: 512,
   },
   usersInvolved: {
-    required: true,
     type: Array,
+    required: true,
+    ref: 'User',
   },
   owner: {
     type: String,
@@ -31,8 +34,8 @@ const GroupSchema = new mongoose.Schema({
     required: true,
   },
   bills: {
-    type: Number,
-    default: 0,
+    type: Array,
+    default: [],
   },
   createdDate: {
     type: Date,
