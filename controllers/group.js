@@ -10,28 +10,36 @@ const createGroupController = async (req, res, next) => {
     // console.log(inviteID)
 
     const { groupName, usersInvolved, owner } = req.body;
-    //validation
+    // Validation
     if (!groupName) {
       return res.status(400).send({
         success: false,
-        message: 'name is required',
+        message: 'Name is required',
       });
     }
 
     let payload = { ...req.body, inviteID };
 
     // Save Group
-    // console.log(req.body);
-    // console.log(usersInvolved);
-    // console.log(payload)
-
     Group.create(payload)
-      .then((docs) => {
-        res.status(201).send({
-          success: true,
-          message: 'Created Successfully',
-          invitation: inviteID,
-        });
+      .then((group) => {
+        // Update owner's groupsInvolved
+        User.findByIdAndUpdate(owner, { $push: { groupsInvolved: group._id } })
+          .then(() => {
+            res.status(201).send({
+              success: true,
+              message: 'Created Successfully',
+              invitation: inviteID,
+            });
+          })
+          .catch((err) => {
+            console.log(err);
+            res.status(500).send({
+              success: false,
+              message: 'Error in updating owner',
+              error: err,
+            });
+          });
       })
       .catch((err) => {
         console.log(err);
@@ -45,7 +53,7 @@ const createGroupController = async (req, res, next) => {
     console.log(error);
     return res.status(500).send({
       success: false,
-      message: 'Error in Register API',
+      message: 'Error in Create Group API',
       error: error,
     });
   }
@@ -78,7 +86,6 @@ const addUserToGroupController = async (req, res, next) => {
 
     //get group from groupID
     let group = await Group.findById(req.body.groupID);
-    console.log(group.usersInvolved);
 
     let newMembers = [...group.usersInvolved, req.body.userID];
 
