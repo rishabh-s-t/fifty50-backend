@@ -9,6 +9,10 @@ const GroupSchema = new mongoose.Schema({
     required: [true, 'Please add group name'],
     trim: true,
   },
+  groupDescription: {
+    type: String,
+    required: false,
+  },
   usersInvolved: {
     required: true,
     type: Array,
