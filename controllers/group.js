@@ -74,7 +74,7 @@ const addUserToGroupController = async (req, res) => {
 
 const getGroupController = async (req, res) => {
   const groupId = req.params.groupId;
-  const group = Group.findOne({ inviteID: groupId });
+  const group = await Group.findOne({ inviteID: groupId }).exec();
 
   if (!group) {
     res.status(404).send('No group with the following Id');
@@ -82,8 +82,48 @@ const getGroupController = async (req, res) => {
   }
 
   res.status(200).send({
-    //todo
+    name: group.groupName,
+    description: group.groupDescription,
+    members: group.usersInvolved,
+    owner: group.owner,
+    avatar: group.groupAvatar,
+    date: group.createdDate,
   });
 };
 
-module.exports = { createGroupController, addUserToGroupController };
+const deleteGroupController = async (req, res) => {
+  const groupId = req.params.groupId;
+  const group = await Group.findById(groupId);
+
+  if (!group) {
+    res.status(404).send('Group not found');
+  }
+
+  //Todo Delete expense
+
+  const result = await Group.deleteOne({ _id: groupId });
+
+  return res.status(200).send('Group Deleted');
+};
+
+const getAllGroupsFromMemberId = async (req, res) => {
+  const memberId = req.params.memberId;
+
+  try {
+    const groups = await Group.find({ usersInvolved: memberId }).lean();
+    res.status(200).send(groups);
+  } catch (error) {
+    res.status(500).send('Error in fetching the user groups');
+  }
+};
+
+const getExpenseController = async (req, res) => {};
+
+module.exports = {
+  createGroupController,
+  addUserToGroupController,
+  getGroupController,
+  deleteGroupController,
+  getAllGroupsFromMemberId,
+  getExpenseController,
+};
