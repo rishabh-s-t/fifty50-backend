@@ -5,12 +5,19 @@ const mongoose = require('mongoose');
 
 const createGroupController = async (req, res) => {
   const inviteId = uuid.v4().substring(0, 5);
-  const { groupName, usersInvolved, owner } = req.body;
+  const { groupName, usersInvolved, owner, groupDescription } = req.body;
 
   if (!groupName) {
     return res.status(400).send({
       success: false,
       message: 'Group name is required',
+    });
+  }
+
+  if (groupDescription.length > 64) {
+    return res.status(400).send({
+      success: false,
+      message: 'Group description too long',
     });
   }
 
@@ -55,7 +62,7 @@ const addUserToGroupController = async (req, res) => {
     return;
   }
 
-  const member = await User.findById(memberId);
+  const member = await User.findById({ _id: memberId });
   if (!member) {
     res.status(404).send('User not found');
     return;
@@ -66,8 +73,14 @@ const addUserToGroupController = async (req, res) => {
     return;
   }
 
-  group.usersInvolved.push(memberId);
+  group.usersInvolved.push(member._id);
   await group.save();
+
+  //modify the user's groups involved array
+  const grpId = group._id;
+  console.log(grpId);
+  member.groupsInvolved.push(group._id);
+  await member.save();
 
   res.status(200).send('User added successfully');
 };
@@ -88,6 +101,7 @@ const getGroupController = async (req, res) => {
     owner: group.owner,
     avatar: group.groupAvatar,
     date: group.createdDate,
+    bills: group.bills,
   });
 };
 

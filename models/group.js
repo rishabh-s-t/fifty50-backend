@@ -13,15 +13,15 @@ const GroupSchema = new mongoose.Schema({
   },
   groupDescription: {
     type: String,
-    maxlength: 512,
+    maxlength: 64,
   },
   usersInvolved: {
-    type: Array,
+    type: [mongoose.Types.ObjectId],
     required: true,
     ref: 'User',
   },
   owner: {
-    type: String,
+    type: mongoose.Types.ObjectId,
     required: true,
   },
   groupAvatar: {
@@ -34,7 +34,7 @@ const GroupSchema = new mongoose.Schema({
     required: true,
   },
   bills: {
-    type: Array,
+    type: [mongoose.Types.ObjectId],
     default: [],
   },
   createdDate: {

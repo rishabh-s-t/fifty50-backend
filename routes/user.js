@@ -1,18 +1,26 @@
-const express = require('express')
-const { registerController, loginController, updateAvatarController } = require('../controllers/user')
+const express = require('express');
+const {
+  registerController,
+  loginController,
+  updateAvatarController,
+  getUserController,
+} = require('../controllers/user');
 
 //Router Object
-const router = express.Router()
+const router = express.Router();
 
 //Routes
 
 //User Register
-router.post('/register', registerController)
+router.post('/register', registerController);
 
 //User Login
-router.post('/login', loginController)
+router.post('/login', loginController);
 
 //User Update Avatar
-router.post('/updateAvatar', updateAvatarController)
+router.post('/updateAvatar', updateAvatarController);
 
-module.exports = router
+//User Details
+router.get('/:userId', getUserController);
+
+module.exports = router;
