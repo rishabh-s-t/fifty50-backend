@@ -35,7 +35,7 @@ const addExpenseController = async (req, res) => {
             paidBy: paidBy,
             members: members,
             membersBalance: memberBalances,
-            settledMembers: [],
+            settledMembers: [paidBy],
             isSettled: false
         })
 
@@ -50,6 +50,66 @@ const addExpenseController = async (req, res) => {
     }
 }
 
+const getGroupMemberExpenseController = async (req, res) => {
+    const groupId = req.params.groupId
+    const memberId = req.params.memberId
+
+    const expenses = await Expense.find({
+        group: groupId,
+    }).populate('paidBy', {
+        name: 1,
+        _id: 1
+    })
+
+    const activeExpenses = expenses.filter(expense => {
+        return (
+            expense.settledMembers.indexOf(memberId) === -1 && !expense.isSettled
+        )
+    })
+
+    const settledExpenses = expenses.filter(expense => {
+        return expense.settledMembers.indexOf(memberId) > -1 || expense.isSettled
+    })
+
+    res.send({
+        activeExpenses,
+        settledExpenses
+    })
+}
+
+const updateMemberExpense = async (req, res) => {
+    const expenseId = req.params.expenseId
+    const memberId = req.params.memberId
+    const expense = await Expense.findById(expenseId)
+
+    if (!expense) res.status(400).send('Expense not found!')
+
+    const index = expense.settledMembers.indexOf(memberId)
+
+    if (index > -1) res.status(200).send({
+        message: 'Member already settled',
+        expense: expense,
+    })
+    else expense.settledMembers.push(memberId)
+
+    if (expense.settledMembers.length === 0) {
+        expense.isSettled = false;
+    } else {
+        const paidByString = expense.paidBy.toString();
+
+        const unSettledMembers = expense.membersBalance.filter(member => member.id.toString() !== paidByString);
+
+        if (expense.settledMembers.length === unSettledMembers.length) {
+            expense.isSettled = true;
+        }
+    }
+
+    await expense.save()
+    res.send(expense)
+}
+
 module.exports = {
-    addExpenseController
+    addExpenseController,
+    getGroupMemberExpenseController,
+    updateMemberExpense
 };
