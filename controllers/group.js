@@ -102,6 +102,7 @@ const getGroupController = async (req, res) => {
     avatar: group.groupAvatar,
     date: group.createdDate,
     bills: group.bills,
+    id: group._id
   });
 };
 
@@ -131,7 +132,7 @@ const getAllGroupsFromMemberId = async (req, res) => {
   }
 };
 
-const getExpenseController = async (req, res) => {};
+const getExpenseController = async (req, res) => { };
 
 module.exports = {
   createGroupController,

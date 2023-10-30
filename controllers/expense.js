@@ -6,24 +6,24 @@ const { calculateSplit } = require('../services/expenseService');
 
 const addExpenseController = async (req, res) => {
     try {
-        const groupId = req.body.group
-        const title = req.body.title
-        const paidBy = req.body.paidBy
-        const description = req.body.description
-        const amount = req.body.amount
-        const avatar = req.body.avatar
-        const members = req.body.members
+        let groupId = req.body.group
+        let title = req.body.title
+        let paidBy = req.body.paidBy
+        let description = req.body.description
+        let amount = +req.body.amount
+        let avatar = req.body.avatar
+        let members = req.body.members
 
         if (!avatar) avatar = 1
         if (!description) description = ''
 
-        const group = await Group.findById(groupId)
+        let group = await Group.findById(groupId)
 
         if (!group) {
             res.status(404).send('Group not found')
         }
 
-        const memberBalances = await calculateSplit(paidBy, members, amount)
+        let memberBalances = await calculateSplit(paidBy, members, amount)
 
         const expense = new Expense({
             title: title,
@@ -45,7 +45,10 @@ const addExpenseController = async (req, res) => {
             expense: expense,
         })
     } catch (error) {
-        res.status(400).send("Ran into an error while contacting the DB")
+        res.status(400).send({
+            message: "Ran into an error while contacting DB",
+            error: error.message,
+        })
         return
     }
 }
