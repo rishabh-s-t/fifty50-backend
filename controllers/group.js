@@ -85,7 +85,7 @@ const addUserToGroupController = async (req, res) => {
   res.status(200).send('User added successfully');
 };
 
-const getGroupController = async (req, res) => {
+const getGroupFromInviteController = async (req, res) => {
   const groupId = req.params.groupId;
   const group = await Group.findOne({ inviteID: groupId }).exec();
 
@@ -102,7 +102,7 @@ const getGroupController = async (req, res) => {
     avatar: group.groupAvatar,
     date: group.createdDate,
     bills: group.bills,
-    id: group._id
+    id: group._id,
   });
 };
 
@@ -126,19 +126,61 @@ const getAllGroupsFromMemberId = async (req, res) => {
 
   try {
     const groups = await Group.find({ usersInvolved: memberId }).lean();
-    res.status(200).send(groups);
+    res.status(200).send({
+      groups: groups,
+      length: groups.length,
+    });
   } catch (error) {
-    res.status(500).send('Error in fetching the user groups');
+    res.status(500).send({
+      message: 'Error in fetching the user groups',
+      error: error.message,
+    });
   }
 };
 
-const getExpenseController = async (req, res) => { };
+const getGroupsFromIdController = async (req, res) => {
+  let groupIds = req.query.groupIds;
+
+  if (!groupIds || groupIds.length === 0) {
+    res.status(400).send({
+      message: 'no groups in request or invalid format',
+    });
+    return;
+  }
+
+  groupIds = groupIds.split(',');
+
+  const mongoIds = groupIds.map((id) => {
+    return new mongoose.Types.ObjectId(id);
+  });
+
+  const groupDetails = [];
+
+  try {
+    for (const id of mongoIds) {
+      const group = await Group.findById(id);
+      groupDetails.push(group);
+    }
+  } catch (error) {
+    res.status(400).send({
+      error: error.message,
+    });
+    return;
+  }
+
+  res.status(200).send({
+    groups: groupDetails,
+  });
+};
+
+const getExpenseController = async (req, res) => {};
 
 module.exports = {
   createGroupController,
   addUserToGroupController,
-  getGroupController,
+  getGroupFromInviteController,
   deleteGroupController,
   getAllGroupsFromMemberId,
   getExpenseController,
+  getGroupsFromIdController,
 };
