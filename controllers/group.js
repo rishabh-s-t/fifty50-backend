@@ -1,6 +1,7 @@
 const uuid = require('uuid');
 const Group = require('../models/group');
 const User = require('../models/user');
+const Expense = require('../models/expense');
 const mongoose = require('mongoose');
 
 const createGroupController = async (req, res) => {
@@ -173,7 +174,29 @@ const getGroupsFromIdController = async (req, res) => {
   });
 };
 
-const getExpenseController = async (req, res) => {};
+const getExpenseController = async (req, res) => {
+  let groupId = req.params.groupId;
+  groupId = new mongoose.Types.ObjectId(groupId);
+
+  try {
+    const group = await Group.findById(groupId)
+      .populate('usersInvolved', {
+        password: 0,
+      })
+      .lean({ virtuals: true });
+
+    if (!group?._id) {
+      res.status(404).send({ error: 'Group not found' });
+    }
+
+    const totalExpenses = await Expense.countDocuments({ group: group._id });
+    res.send({ ...group, totalExpenses });
+  } catch (error) {
+    res.status(400).send({
+      error: error.message,
+    });
+  }
+};
 
 module.exports = {
   createGroupController,

@@ -13,8 +13,6 @@ const {
 const router = express.Router();
 
 //Routes
-
-//Create Group
 router.post('/createGroup', createGroupController);
 router.post('/:groupId/member/:memberId', addUserToGroupController);
 router.get('/invite/:groupId', getGroupFromInviteController); //Invite ID
