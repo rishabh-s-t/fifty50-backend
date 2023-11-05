@@ -158,9 +158,29 @@ const getUserController = async (req, res, next) => {
   }
 };
 
+const getMultipleUsersController = async (req, res) => {
+  try {
+    const userIds = req.body.userIds;
+    const users = await User.find({ _id: { $in: userIds } });
+
+    console.log(users)
+
+    if (!users.length) {
+      res.status(400).send('users doesnt exists');
+      return;
+    }
+    res.status(200).send(users);
+  } catch (error) {
+    res.status(500).send('ran into an error');
+    console.log(error.message);
+    return;
+  }
+}
+
 module.exports = {
   registerController,
   loginController,
   updateAvatarController,
   getUserController,
+  getMultipleUsersController
 };

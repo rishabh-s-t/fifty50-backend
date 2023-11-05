@@ -4,6 +4,7 @@ const {
   loginController,
   updateAvatarController,
   getUserController,
+  getMultipleUsersController
 } = require('../controllers/user');
 
 //Router Object
@@ -22,4 +23,5 @@ router.post('/updateAvatar', updateAvatarController);
 //User Details
 router.get('/:userId', getUserController);
 
+router.post('/getMultipleUsers', getMultipleUsersController)
 module.exports = router;
