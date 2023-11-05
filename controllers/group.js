@@ -55,7 +55,7 @@ const createGroupController = async (req, res) => {
 
 const addUserToGroupController = async (req, res) => {
   const groupId = req.params.groupId;
-  const memberId = req.params.memberId;
+  const memberId = new mongoose.Types.ObjectId(req.params.memberId);
   const group = await Group.findOne({ inviteID: groupId });
 
   if (!group) {
@@ -69,7 +69,9 @@ const addUserToGroupController = async (req, res) => {
     return;
   }
 
-  if (group.usersInvolved.includes(member._id)) {
+  const memberIdString = memberId.toString();
+
+  if (group.usersInvolved.find(userId => userId.toString() === memberIdString)) {
     res.status(400).send('User already exists in the group');
     return;
   }

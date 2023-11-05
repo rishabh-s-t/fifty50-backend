@@ -127,20 +127,16 @@ const loginController = async (req, res, next) => {
 };
 
 const updateAvatarController = async (req, res, next) => {
-  await User.findOneAndUpdate({ userEmailID: req.body.userEmailID }, req.body, {
-    new: true,
-  })
-    .then((response) => {
-      res.status(200).json({
-        code: 200,
-        message: response
-          ? 'Avatar Updated Successfully'
-          : 'User not found or the email does not exists',
-      });
+  try {
+    const updatedUser = await User.findOneAndUpdate({ userEmailID: req.body.userEmailID }, req.body, { new: true })
+
+    res.status(200).send({
+      message: 'Avatar Updated Successfully',
+      user: updatedUser
     })
-    .catch((err) => {
-      res.json(err);
-    });
+  } catch (error) {
+    res.status(400).send(error)
+  }
 };
 
 const getUserController = async (req, res, next) => {
