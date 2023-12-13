@@ -71,7 +71,9 @@ const addUserToGroupController = async (req, res) => {
 
   const memberIdString = memberId.toString();
 
-  if (group.usersInvolved.find(userId => userId.toString() === memberIdString)) {
+  if (
+    group.usersInvolved.find((userId) => userId.toString() === memberIdString)
+  ) {
     res.status(400).send('User already exists in the group');
     return;
   }
@@ -162,7 +164,11 @@ const getGroupsFromIdController = async (req, res) => {
   try {
     for (const id of mongoIds) {
       const group = await Group.findById(id);
-      groupDetails.push(group);
+      const totalExpenses = await Expense.countDocuments({ group: group._id });
+      const groupObj = group.toObject();
+
+      groupObj.totalExpenses = totalExpenses;
+      groupDetails.push(groupObj);
     }
   } catch (error) {
     res.status(400).send({
