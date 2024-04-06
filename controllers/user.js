@@ -126,16 +126,42 @@ const loginController = async (req, res, next) => {
   }
 };
 
+const updateUserController = async (req, res, next) => {
+  const userId = req.params.userId;
+  const updatedData = req.body;
+
+  try {
+    // Find the user by userId and update the user data
+    const user = await User.findByIdAndUpdate(userId, updatedData, {
+      new: true,
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // User updated successfully
+    return res.status(200).json({ message: 'User updated successfully', user });
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 const updateAvatarController = async (req, res, next) => {
   try {
-    const updatedUser = await User.findOneAndUpdate({ userEmailID: req.body.userEmailID }, req.body, { new: true })
+    const updatedUser = await User.findOneAndUpdate(
+      { userEmailID: req.body.userEmailID },
+      req.body,
+      { new: true }
+    );
 
     res.status(200).send({
       message: 'Avatar Updated Successfully',
-      user: updatedUser
-    })
+      user: updatedUser,
+    });
   } catch (error) {
-    res.status(400).send(error)
+    res.status(400).send(error);
   }
 };
 
@@ -163,7 +189,7 @@ const getMultipleUsersController = async (req, res) => {
     const userIds = req.body.userIds;
     const users = await User.find({ _id: { $in: userIds } });
 
-    console.log(users)
+    console.log(users);
 
     if (!users.length) {
       res.status(400).send('users doesnt exists');
@@ -175,12 +201,13 @@ const getMultipleUsersController = async (req, res) => {
     console.log(error.message);
     return;
   }
-}
+};
 
 module.exports = {
   registerController,
   loginController,
   updateAvatarController,
   getUserController,
-  getMultipleUsersController
+  getMultipleUsersController,
+  updateUserController,
 };
