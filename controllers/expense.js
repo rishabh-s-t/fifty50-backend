@@ -80,6 +80,31 @@ const getGroupMemberExpenseController = async (req, res) => {
   });
 };
 
+const deleteMemberExpense = async (req, res) => {
+  const expenseId = req.params.expenseId;
+  const expense = await Expense.findById(expenseId);
+
+  if (!expense) {
+    return res.status(400).send('Expense not found!');
+  }
+
+  try {
+    const deletedExpense = await Expense.findOneAndDelete({ _id: expenseId });
+
+    if (deletedExpense) {
+      res.status(200).send({
+        data: deletedExpense,
+      });
+    } else {
+      res.status(500).send({
+        message: 'Expense not found!',
+      });
+    }
+  } catch (error) {
+    console.log('Error deleting expense ', error);
+  }
+};
+
 const updateMemberExpense = async (req, res) => {
   const expenseId = req.params.expenseId;
   const memberId = req.params.memberId;
@@ -98,22 +123,31 @@ const updateMemberExpense = async (req, res) => {
     });
   } else {
     expense.settledMembers.push(memberId);
+
+    const updatedMemberBalances = [...expense.membersBalance];
+
+    const memberIndex = updatedMemberBalances.findIndex(
+      (member) => member.id == memberId
+    );
+    if (memberIndex !== -1) {
+      updatedMemberBalances[memberIndex].balance = `${Math.abs(
+        updatedMemberBalances[memberIndex].balance
+      )}`;
+    }
+
+    try {
+      await Expense.findOneAndUpdate(
+        { _id: expenseId },
+        { $set: { membersBalance: updatedMemberBalances } },
+        { new: true }
+      );
+    } catch (error) {
+      console.error('Error updating membersBalance:', error);
+      return res.status(500).send('Error updating membersBalance');
+    }
   }
 
-  const memberIndex = expense.membersBalance.findIndex(
-    (member) => member.id == memberId
-  );
-  if (memberIndex !== -1) {
-    expense.membersBalance[memberIndex].balance = `${Math.abs(
-      expense.membersBalance[memberIndex].balance
-    )}`;
-  }
-
-  const paidByString = expense.paidBy.toString();
-  const unSettledMembers = expense.membersBalance.filter(
-    (member) => member.id.toString() !== paidByString
-  );
-  if (expense.settledMembers.length === unSettledMembers.length) {
+  if (expense.members.length == expense.settledMembers.length) {
     expense.isSettled = true;
   } else {
     expense.isSettled = false;
@@ -127,4 +161,5 @@ module.exports = {
   addExpenseController,
   getGroupMemberExpenseController,
   updateMemberExpense,
+  deleteMemberExpense,
 };
